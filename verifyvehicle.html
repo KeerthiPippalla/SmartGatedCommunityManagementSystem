@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Vehicle</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 25px;
+            padding: 40px 30px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            text-align: center;
+            color: #FF7A2C;
+            letter-spacing: 1px;
+            font-size: 28px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            margin-top: 8px;
+            border-radius: 12px;
+            border: 1px solid #FFD3AC;
+            font-size: 14px;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #FF7A2C;
+            box-shadow: 0 0 6px rgba(255, 122, 44, 0.4);
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .options button {
+            flex: 1 1 120px;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #FF7A2C;
+            color: #fff;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .options button:hover {
+            background-color: #FF944D;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        #video,
+        #capturedPreview {
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 12px;
+            display: none;
+            object-fit: cover;
+        }
+
+        #captureBtn {
+            background-color: #FF7A2C;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        #captureBtn:hover {
+            background-color: #FF944D;
+            transform: translateY(-2px);
+        }
+
+        button.verify-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 15px;
+            font-weight: bold;
+            background-color: #FFD3AC;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            font-size: 16px;
+        }
+
+        button.verify-btn:hover {
+            background-color: #FFC08A;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            padding: 18px;
+            border-radius: 12px;
+            display: none;
+            font-size: 15px;
+        }
+
+        .allowed {
+            background-color: #e7ffe7;
+            color: #1b7d1b;
+        }
+
+        .success {
+            background-color: #e6f7ff;
+            color: #005b96;
+        }
+
+        .unknown {
+            background-color: #ffe7e7;
+            color: #a30000;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        /* Beautified New Vehicle Section */
+        .register-box {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe7cc 100%);
+            padding: 25px 20px;
+            border-radius: 20px;
+            margin-top: 20px;
+            display: none;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            transition: all 0.4s ease;
+        }
+
+        .register-box h3 {
+            color: #FF7A2C;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .register-box input[type="text"] {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #FFD3AC;
+            width: 100%;
+            font-size: 14px;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        .register-box input[type="text"]:focus {
+            border-color: #FF7A2C;
+            box-shadow: 0 0 6px rgba(255, 122, 44, 0.4);
+            outline: none;
+        }
+
+        .register-box button {
+            margin-top: 15px;
+            background-color: #FF7A2C;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .register-box button:hover {
+            background-color: #FF944D;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .options {
+                flex-direction: column;
+            }
+
+            .options button {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Verify Vehicle</h2>
+
+        <label>Villa ID</label>
+        <input type="text" id="villa_id" placeholder="Enter villa ID">
+
+        <label>Entry / Exit</label>
+        <select id="mode">
+            <option value="ENTRY">ENTRY</option>
+            <option value="EXIT">EXIT</option>
+        </select>
+
+        <div class="options">
+            <button onclick="document.getElementById('image').click()">UPLOAD PHOTO</button>
+            <button onclick="openCamera()">CAPTURE PHOTO</button>
+        </div>
+
+        <input type="file" id="image" accept="image/*" style="display:none;" onchange="previewUpload(event)">
+        <video id="video" autoplay></video>
+        <button id="captureBtn" onclick="capturePhoto()">CAPTURE PHOTO</button>
+        <img id="capturedPreview">
+
+        <button class="verify-btn" onclick="submitVehicle()">Verify Vehicle</button>
+
+        <div id="result" class="result"></div>
+
+        <!-- Beautified New Vehicle Section -->
+        <div id="registerBox" class="register-box">
+            <h3> New Vehicle Detected</h3>
+            <label>Owner Name</label>
+            <input type="text" id="owner_name" placeholder="Enter owner name">
+            <button onclick="submitWithOwner()">Register & Allow Entry</button>
+        </div>
+    </div>
+
+    <script>
+        let lastVehicleNo, lastVillaId, lastMode, lastImageFile, cameraStream;
+
+        function previewUpload(event) {
+            lastImageFile = event.target.files[0];
+            const preview = document.getElementById("capturedPreview");
+            preview.src = URL.createObjectURL(lastImageFile);
+            preview.style.display = "block";
+            document.getElementById("video").style.display = "none";
+            document.getElementById("captureBtn").style.display = "none";
+        }
+
+        function openCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+                cameraStream = stream;
+                const video = document.getElementById("video");
+                video.srcObject = stream;
+                video.style.display = "block";
+                document.getElementById("captureBtn").style.display = "block";
+                document.getElementById("capturedPreview").style.display = "none";
+            }).catch(() => alert("Camera access denied"));
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById("video");
+            const canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+            canvas.toBlob(blob => {
+                lastImageFile = new File([blob], "vehicle.jpg", { type: "image/jpeg" });
+                const preview = document.getElementById("capturedPreview");
+                preview.src = URL.createObjectURL(blob);
+                preview.style.display = "block";
+                video.style.display = "none";
+                document.getElementById("captureBtn").style.display = "none";
+                cameraStream.getTracks().forEach(t => t.stop());
+            }, "image/jpeg");
+        }
+
+        function showResult(msg, cls) {
+            const div = document.getElementById("result");
+            div.className = "result " + cls;
+            div.innerText = msg;
+            div.style.display = "block";
+        }
+
+        async function submitVehicle() {
+            const villa_id = document.getElementById("villa_id").value.trim();
+            const mode = document.getElementById("mode").value;
+            const image = document.getElementById("image").files[0] || lastImageFile;
+            document.getElementById("registerBox").style.display = "none";
+            document.getElementById("result").style.display = "none";
+
+            if (!villa_id || !image) return alert("Villa ID and image required");
+
+            const formData = new FormData();
+            formData.append("villa_id", villa_id);
+            formData.append("mode", mode);
+            formData.append("owner_name", "");
+            formData.append("image", image);
+
+            const res = await fetch("/verify_vehicle_entry_exit", { method: "POST", body: formData });
+            const data = await res.json();
+
+            if (data.status === "allowed") showResult(data.message, "allowed");
+            else if (data.status === "exit_ok") showResult(data.message, "success");
+            else if (data.status === "new_vehicle") {
+                lastVehicleNo = data.vehicle_no;
+                lastVillaId = villa_id;
+                lastMode = mode;
+                lastImageFile = image;
+                showResult(`New vehicle detected: ${data.vehicle_no}. Enter owner name & send for approval.`, "warning");
+                document.getElementById("registerBox").style.display = "block";
+            } else showResult(data.message || "Error occurred", "unknown");
+        }
+
+        let currentVehNotifId, pollVehTimer;
+
+        async function submitWithOwner() {
+            const owner_name = document.getElementById("owner_name").value.trim();
+            if (!owner_name) return alert("Owner name required");
+
+            const formData = new FormData();
+            formData.append("villa_id", lastVillaId);
+            formData.append("vehicle_no", lastVehicleNo);
+            formData.append("owner_name", owner_name);
+
+            const res = await fetch("/create_vehicle_notification", { method: "POST", body: formData });
+            const data = await res.json();
+
+            if (data.status === "ok") {
+                currentVehNotifId = data.notification_id;
+                showResult("Notification sent. Waiting for resident approval...", "success");
+                document.getElementById("registerBox").style.display = "none";
+                startVehiclePolling();
+            }
+        }
+
+        function startVehiclePolling() {
+            if (pollVehTimer) clearInterval(pollVehTimer);
+            pollVehTimer = setInterval(async () => {
+                const res = await fetch(`/check_vehicle_notification_status?villa_id=${lastVillaId}&notif_id=${currentVehNotifId}`);
+                const data = await res.json();
+                if (data.status === "approved") {
+                    clearInterval(pollVehTimer);
+                    finalRegisterVehicle();
+                }
+                if (data.status === "rejected") {
+                    clearInterval(pollVehTimer);
+                    showResult("Vehicle rejected by resident", "unknown");
+                }
+            }, 3000);
+        }
+
+        async function finalRegisterVehicle() {
+            const formData = new FormData();
+            formData.append("villa_id", lastVillaId);
+            formData.append("notif_id", currentVehNotifId);
+
+            const res = await fetch("/final_register_vehicle", { method: "POST", body: formData });
+            const data = await res.json();
+
+            if (data.status === "allowed") showResult(data.message, "allowed");
+            else showResult(data.message || "Error registering vehicle", "unknown");
+        }
+    </script>
+</body>
+
+</html>

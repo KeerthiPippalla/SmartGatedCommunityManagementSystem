@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Verified Visitors</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+        }
+
+        h2 {
+            text-align: center;
+            color: #FF7A2C;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        p {
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #FFD3AC;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        th {
+            background: #FFD3AC;
+            color: #000;
+            font-weight: bold;
+        }
+
+        td img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        button.delete-btn {
+            background: #FF7A2C;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button.delete-btn:hover {
+            background: #FF944D;
+            transform: translateY(-2px);
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            padding: 14px;
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            background: #FFD3AC;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #FFC08A;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+
+            table,
+            th,
+            td {
+                font-size: 14px;
+            }
+
+            td img {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 22px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+
+            td img {
+                width: 50px;
+                height: 50px;
+            }
+
+            button.delete-btn,
+            .back-btn {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>VERIFIED VISITORS</h2>
+
+        <p><b>Villa ID:</b> <span id="villaIdText"></span></p>
+
+        <table id="visitorsTable">
+            <thead>
+                <tr>
+                    <th>Visitor ID</th>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>Last Allowed</th>
+                    <th>Total Entries</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Visitors inserted here -->
+            </tbody>
+        </table>
+
+        <button class="back-btn" onclick="goBack()">⬅ BACK TO VERIFY PAGE</button>
+    </div>
+
+    <script>
+        async function deleteVisitor(visitorId) {
+            const villaId = getQueryParam("villa_id");
+
+            if (!confirm(`Are you sure you want to delete visitor ${visitorId}?`)) return;
+
+            try {
+                const res = await fetch("/delete_visitor", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ villa_id: villaId, visitor_id: visitorId })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    alert("Visitor deleted successfully.");
+                    loadVerifiedVisitors();
+                } else {
+                    alert("Failed to delete visitor: " + data.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Server error while deleting visitor.");
+            }
+        }
+
+        function getQueryParam(param) {
+            return new URLSearchParams(window.location.search).get(param);
+        }
+
+        async function loadVerifiedVisitors() {
+            const villaId = getQueryParam("villa_id");
+            document.getElementById("villaIdText").innerText = villaId;
+
+            const res = await fetch(`/get_verified_visitors?villa_id=${villaId}`);
+            const data = await res.json();
+
+            const tbody = document.querySelector("#visitorsTable tbody");
+            tbody.innerHTML = "";
+
+            if (!data.visitors || data.visitors.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6">No visitors found</td></tr>`;
+                return;
+            }
+
+            for (let v of data.visitors) {
+                const row = document.createElement("tr");
+                const imgPath = `/static/uploads/${v.visitor_id}.jpg`;
+
+                row.innerHTML = `
+        <td>${v.visitor_id}</td>
+        <td><img src="${imgPath}" alt="Visitor Image" onerror="this.src='/static/uploads/default.jpg'"></td>
+        <td>${v.name}</td>
+        <td>${v.last_allowed || "Never"}</td>
+        <td>${v.total_entries || 0}</td>
+        <td>
+            <button class="delete-btn" onclick="deleteVisitor('${v.visitor_id}')">Delete</button>
+        </td>`;
+                tbody.appendChild(row);
+            }
+        }
+
+        function goBack() {
+            window.location.href = "/resident";
+        }
+
+        loadVerifiedVisitors();
+    </script>
+
+</body>
+
+</html>

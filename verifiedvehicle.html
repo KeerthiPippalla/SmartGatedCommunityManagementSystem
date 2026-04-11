@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Verified Vehicles</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 25px;
+            padding: 40px 30px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #FF7A2C;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            border: 1px solid #FFD3AC;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        th {
+            background: #FFD3AC;
+            color: #000;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #fff6ee;
+        }
+
+        .delete-btn {
+            background-color: #FF7A2C;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .delete-btn:hover {
+            background-color: #FF944D;
+            transform: translateY(-2px);
+        }
+
+        .empty {
+            text-align: center;
+            font-weight: bold;
+            color: #a30000;
+            padding: 10px 0;
+        }
+
+        .back-btn {
+            margin-top: 25px;
+            background-color: #FFD3AC;
+            border: none;
+            padding: 14px 0;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .back-btn:hover {
+            background-color: #FFC08A;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+
+            table,
+            th,
+            td {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 22px;
+            }
+
+            .back-btn {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Verified Vehicles</h2>
+
+        <table id="vehiclesTable">
+            <thead>
+                <tr>
+                    <th>Vehicle Number</th>
+                    <th>Owner Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="vehiclesBody">
+                <!-- Rows dynamically inserted -->
+            </tbody>
+        </table>
+
+        <div id="emptyMsg" class="empty" style="display:none;">
+            No verified vehicles found for this villa.
+        </div>
+
+        <button class="back-btn" onclick="goBack()">⬅ Back to Dashboard</button>
+    </div>
+
+    <script>
+        const username = sessionStorage.getItem("username");
+
+        if (!username) window.location.href = "/index";
+
+        const villaId = username.toLowerCase();
+
+        async function loadVehicles() {
+            try {
+                const res = await fetch(`/get_verified_vehicles?villa_id=${villaId}`);
+                const data = await res.json();
+
+                const tbody = document.getElementById("vehiclesBody");
+                const emptyMsg = document.getElementById("emptyMsg");
+
+                tbody.innerHTML = "";
+
+                if (!data.vehicles || data.vehicles.length === 0) {
+                    emptyMsg.style.display = "block";
+                    return;
+                }
+                emptyMsg.style.display = "none";
+
+                data.vehicles.forEach(v => {
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+                        <td>${v.vehicle_no}</td>
+                        <td>${v.owner_name}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteVehicle('${v.vehicle_no}')">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error("Error loading vehicles:", err);
+            }
+        }
+
+        async function deleteVehicle(vehicleNo) {
+            if (!confirm(`Are you sure you want to delete vehicle ${vehicleNo}?`)) return;
+
+            try {
+                const res = await fetch("/delete_vehicle", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ villa_id: villaId, vehicle_no: vehicleNo })
+                });
+
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    alert("Vehicle deleted successfully.");
+                    loadVehicles();
+                } else {
+                    alert(data.message || "Failed to delete vehicle.");
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Server error while deleting vehicle.");
+            }
+        }
+
+        function goBack() {
+            window.location.href = "/resident";
+        }
+
+        loadVehicles();
+    </script>
+
+</body>
+
+</html>
