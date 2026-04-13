@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Amenity Booking</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: #fff;
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #FF7A2C;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .note {
+            background: #fff3cd;
+            color: #856404;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 15px;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            border-radius: 12px;
+            border: 1px solid #FFD3AC;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .calendar,
+        .slots {
+            display: grid;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .calendar {
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .cell {
+            padding: 16px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cell:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .slots {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        }
+
+        .slot {
+            padding: 16px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .slot:hover:not(.red) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .green {
+            background: #e7ffe7;
+            color: #1b7d1b;
+        }
+
+        .orange {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .red {
+            background: #ffe7e7;
+            color: #a30000;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .calendar {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calendar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .slots {
+                grid-template-columns: 1fr;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .note {
+                font-size: 14px;
+            }
+
+            select {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>AMENITY BOOKING</h2>
+
+        <div class="note">
+            <b> Booking Rules:</b><br><br>
+            • <b>Clubhouse:</b> Can be booked for any future day of the current month.<br>
+            • <b>Swimming Pool & Gym:</b> Can be booked for tomorrow only. 4 slots (3-hour blocks).<br>
+            • Each Pool/Gym slot allows max <b>10 members</b>. Booking is auto-confirmed if available.
+        </div>
+
+        <select id="amenity" onchange="onAmenityChange()">
+            <option value="">-- Select Amenity --</option>
+            <option value="CLUBHOUSE">Clubhouse</option>
+            <option value="POOL">Swimming Pool</option>
+            <option value="GYM">Gym</option>
+        </select>
+
+        <div id="calendarSection" class="hidden">
+            <div class="calendar" id="calendar"></div>
+        </div>
+
+        <div id="slotsSection" class="hidden">
+            <div class="slots" id="slots"></div>
+        </div>
+    </div>
+
+    <script>
+        const villaId = sessionStorage.getItem('username')?.toLowerCase() || 'villa1';
+        const MAX_CAPACITY = 10;
+
+        function onAmenityChange() {
+            document.getElementById('calendarSection').classList.add('hidden');
+            document.getElementById('slotsSection').classList.add('hidden');
+
+            const amenity = document.getElementById('amenity').value;
+
+            if (amenity === 'CLUBHOUSE') renderClubhouseCalendar();
+            if (amenity === 'POOL' || amenity === 'GYM') loadPoolGymSlots(amenity);
+        }
+
+        async function renderClubhouseCalendar() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const calDiv = document.getElementById('calendar');
+            calDiv.innerHTML = '';
+            document.getElementById('calendarSection').classList.remove('hidden');
+
+            const res = await fetch(`/get_clubhouse_calendar?villa_id=${villaId}`);
+            const data = await res.json();
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const cellDate = new Date(year, month, d);
+                const key = `${year}-${month + 1}-${d}`;
+                const isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const status = data[key]?.status || 'available';
+
+                let cls = 'green';
+                if (isPast || status === 'booked') cls = 'red';
+
+                const cell = document.createElement('div');
+                cell.className = `cell ${cls}`;
+                cell.innerHTML = `Day ${d}<br>${cls === 'green' ? 'Available' : 'Unavailable'}`;
+
+                if (cls === 'green') cell.onclick = () => bookClubhouse(key);
+
+                calDiv.appendChild(cell);
+            }
+        }
+
+        async function bookClubhouse(dateKey) {
+            const res = await fetch('/book_clubhouse', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ villa_id: villaId, date: dateKey })
+            });
+            const data = await res.json();
+            alert(data.message);
+            renderClubhouseCalendar();
+        }
+
+        async function loadPoolGymSlots(type) {
+            document.getElementById('slotsSection').classList.remove('hidden');
+            const slotsDiv = document.getElementById('slots');
+            slotsDiv.innerHTML = '';
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateKey = tomorrow.toISOString().split('T')[0];
+
+            const res = await fetch(`/get_pool_gym_slots?amenity=${type}&date=${dateKey}`);
+            const data = await res.json();
+
+            const blocks = [
+                { label: '6:00 - 9:00', key: '6-9' },
+                { label: '9:00 - 12:00', key: '9-12' },
+                { label: '12:00 - 15:00', key: '12-15' },
+                { label: '15:00 - 18:00', key: '15-18' }
+            ];
+
+            blocks.forEach(b => {
+                const count = data[b.key]?.count || 0;
+                const available = MAX_CAPACITY - count;
+
+                let cls = 'green';
+                if (available <= 3 && available > 0) cls = 'orange';
+                if (available <= 0) cls = 'red';
+
+                const slot = document.createElement('div');
+                slot.className = `slot ${cls}`;
+                slot.innerHTML = `${b.label}<br>${available}/${MAX_CAPACITY} available`;
+
+                if (available > 0) slot.onclick = () => bookPoolGym(type, dateKey, b.key);
+
+                slotsDiv.appendChild(slot);
+            });
+        }
+
+        async function bookPoolGym(type, dateKey, slotKey) {
+            const res = await fetch('/book_pool_gym', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ villa_id: villaId, amenity: type, date: dateKey, slot: slotKey })
+            });
+            const data = await res.json();
+            alert(data.message);
+            loadPoolGymSlots(type);
+        }
+    </script>
+</body>
+
+</html>

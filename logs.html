@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Entry Logs</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: #fff;
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 25px;
+            padding: 30px 40px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #FF7A2C;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        h3 {
+            font-size: 20px;
+            color: #8a4f2a;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        th {
+            background: #FFD3AC;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #fff7f0;
+        }
+
+        tr:hover {
+            background: #ffe7cc;
+        }
+
+        .empty-row {
+            text-align: center;
+            font-weight: bold;
+            color: #a30000;
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            padding: 14px 20px;
+            background: #FFD3AC;
+            border: none;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #ffc08a;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            h2 {
+                font-size: 24px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+
+            th,
+            td {
+                font-size: 13px;
+                padding: 10px;
+            }
+
+            .back-btn {
+                font-size: 14px;
+                padding: 12px 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 20px;
+            }
+
+            h3 {
+                font-size: 16px;
+            }
+
+            th,
+            td {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            .back-btn {
+                font-size: 13px;
+                padding: 10px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>ENTRY LOGS</h2>
+
+        <h3> Visitor Logs</h3>
+        <table id="visitorLogsTable">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Visitor ID</th>
+                    <th>Name</th>
+                    <th>Villa ID</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <h3> Vehicle Logs</h3>
+        <table id="vehicleLogsTable">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Vehicle No</th>
+                    <th>Owner Name</th>
+                    <th>Villa ID</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <button class="back-btn" onclick="goBack()">⬅ BACK TO ADMIN</button>
+    </div>
+
+    <script>
+        async function loadVisitorLogs() {
+            try {
+                const res = await fetch("/get_visitor_logs");
+                const data = await res.json();
+
+                const tbody = document.querySelector("#visitorLogsTable tbody");
+                tbody.innerHTML = "";
+
+                if (!data.logs || data.logs.length === 0) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td colspan="5" class="empty-row">No visitor logs found</td>`;
+                    tbody.appendChild(row);
+                    return;
+                }
+
+                data.logs.forEach(log => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${log.time}</td>
+                        <td>${log.visitor_id}</td>
+                        <td>${log.visitor_name}</td>
+                        <td>${log.villa_id}</td>
+                        <td>${log.status}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load visitor logs");
+            }
+        }
+
+        async function loadVehicleLogs() {
+            try {
+                const res = await fetch("/get_vehicle_logs");
+                const data = await res.json();
+
+                const tbody = document.querySelector("#vehicleLogsTable tbody");
+                tbody.innerHTML = "";
+
+                if (!data.logs || data.logs.length === 0) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td colspan="5" class="empty-row">No vehicle logs found</td>`;
+                    tbody.appendChild(row);
+                    return;
+                }
+
+                data.logs.forEach(log => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${log.time}</td>
+                        <td>${log.vehicle_no}</td>
+                        <td>${log.owner_name}</td>
+                        <td>${log.villa_id}</td>
+                        <td>${log.status}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load vehicle logs");
+            }
+        }
+
+        function goBack() {
+            window.location.href = "/admin";
+        }
+
+        loadVisitorLogs();
+        loadVehicleLogs();
+    </script>
+
+</body>
+
+</html>

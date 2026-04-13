@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>SIGN UP | SMART GATED COMMUNITY MANAGEMENT SYSTEM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            color: #000;
+            text-transform: uppercase;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 22px;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            font-size: 20px;
+            letter-spacing: 1px;
+            color: #FF7A2C;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            margin-top: 14px;
+            border-radius: 10px;
+            border: 1px solid #FFD3AC;
+            font-size: 14px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background: #fff;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #FF7A2C;
+            box-shadow: 0 0 5px rgba(255, 122, 44, 0.5);
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: #FF7A2C;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background: #FF944D;
+            transform: translateY(-2px);
+        }
+
+        .msg {
+            margin-top: 18px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #FF7A2C;
+            min-height: 20px;
+        }
+
+        p {
+            margin-top: 25px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        a {
+            color: #FF7A2C;
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        a:hover {
+            color: #FF944D;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 30px 20px;
+            }
+
+            header h1 {
+                font-size: 18px;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>SMART GATED COMMUNITY MANAGEMENT SYSTEM</h1>
+        <p>CREATE ACCOUNT</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>SIGN UP</h2>
+
+            <select id="role">
+                <option value="guard">GUARD</option>
+                <option value="resident">RESIDENT</option>
+                <option value="admin">ADMIN</option>
+            </select>
+
+            <input type="text" id="username" placeholder="USERNAME" />
+            <input type="password" id="password" placeholder="PASSWORD" />
+
+            <button onclick="signup()">CREATE ACCOUNT</button>
+
+            <div class="msg" id="signupMsg"></div>
+
+            <p>ALREADY HAVE AN ACCOUNT? <a href="/">LOGIN</a></p>
+        </div>
+    </div>
+
+    <script>
+
+        async function signup() {
+            const role = document.getElementById("role").value;
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const msg = document.getElementById("signupMsg");
+
+            const res = await fetch("/signup_user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role, username, password })
+            });
+
+            const data = await res.json();
+
+            msg.innerText = data.message;
+        }
+
+    </script>
+
+</body>
+
+</html>

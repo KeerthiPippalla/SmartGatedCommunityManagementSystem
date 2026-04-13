@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            display: flex;
+            flex-direction: column;
+            color: #000;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #FF7A2C, #FFD3AC);
+            padding: 30px 40px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-name {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 24px;
+            letter-spacing: 1px;
+            font-weight: bold;
+            color: #fff;
+            backdrop-filter: blur(5px);
+        }
+
+        .logout-btn {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #fff;
+            color: #FF7A2C;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: background 0.3s, transform 0.2s, color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #FF7A2C;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            padding: 60px 20px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: #fff;
+            width: 280px;
+            height: 180px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            color: #FF7A2C;
+            letter-spacing: 1px;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                gap: 25px;
+            }
+
+            .card {
+                width: 80%;
+                height: 150px;
+                font-size: 22px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                padding: 25px 30px;
+                font-size: 24px;
+            }
+
+            .logout-btn {
+                right: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                height: 130px;
+                font-size: 20px;
+            }
+
+            .header {
+                font-size: 20px;
+                padding: 20px;
+            }
+
+            .logout-btn {
+                right: 20px;
+                padding: 8px 14px;
+                font-size: 14px;
+            }
+
+            .admin-name {
+                font-size: 18px;
+                padding: 6px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        ADMIN DASHBOARD
+        <span id="adminName" class="admin-name">USERNAME</span>
+        <button class="logout-btn" onclick="logout()">LOGOUT</button>
+    </div>
+
+    <div class="container">
+        <div class="card" onclick="goToCommunityComm()">COMMUNITY COMMUNICATION</div>
+        <div class="card" onclick="goToAmenityUsage()">AMENITY USAGE DETAILS</div>
+        <div class="card" onclick="goToManageResidents()">MANAGE RESIDENTS</div>
+        <div class="card" onclick="goToLogs()">LOG DETAILS</div>
+    </div>
+
+    <script>
+        const username = sessionStorage.getItem("username");
+        if (!username) window.location.href = "/index";
+        document.getElementById("adminName").innerText = username.toUpperCase();
+
+        function goToCommunityComm() {
+            window.location.href = "/community_communication";
+        }
+
+        function goToAmenityUsage() {
+            window.location.href = "/admin_amenity_usage";
+        }
+
+        function goToManageResidents() {
+            window.location.href = "/manage_residents";
+        }
+
+        function goToLogs() {
+            window.location.href = "/logs";
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "/index";
+        }
+    </script>
+
+</body>
+
+</html>

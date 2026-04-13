@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Community Communication</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app {
+            width: 95%;
+            max-width: 1000px;
+            height: 90vh;
+            background: #fff;
+            border-radius: 25px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(90deg, #FF7A2C, #FFD3AC);
+            padding: 22px 30px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 26px;
+            letter-spacing: 1px;
+            color: #fff;
+            border-bottom: 2px solid #FF944D;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            background: #fdf7f0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .left {
+            align-self: flex-start;
+            background: #fff;
+            border: 1px solid #f2b27c;
+            border-bottom-left-radius: 6px;
+        }
+
+        .right {
+            align-self: flex-end;
+            background: #ffe6cc;
+            border: 1px solid #FF7A2C;
+            border-bottom-right-radius: 6px;
+        }
+
+        .sender {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        .time {
+            font-size: 11px;
+            text-align: right;
+            margin-top: 6px;
+            color: #777;
+        }
+
+        .input-bar {
+            padding: 18px;
+            background: #fff;
+            border-top: 1px solid #FFD3AC;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-bar input {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 25px;
+            border: 1px solid #FFD3AC;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        .input-bar input:focus {
+            border-color: #FF7A2C;
+            box-shadow: 0 0 6px rgba(255, 122, 44, 0.3);
+        }
+
+        .input-bar button {
+            background: #FF7A2C;
+            border: none;
+            border-radius: 25px;
+            padding: 14px 22px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            color: #fff;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .input-bar button:hover {
+            background: #FF944D;
+            transform: translateY(-2px);
+        }
+
+        .input-bar button:active {
+            transform: scale(0.97);
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #FF7A2C;
+            border-radius: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #f2f2f2;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                font-size: 22px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                font-size: 20px;
+                padding: 16px;
+            }
+
+            .input-bar input {
+                font-size: 14px;
+            }
+
+            .input-bar button {
+                padding: 12px 18px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app">
+        <div class="header">
+            COMMUNITY COMMUNICATION
+        </div>
+
+        <div class="chat-container" id="chat"></div>
+
+        <div class="input-bar">
+            <input type="text" id="messageInput" placeholder="Type your message..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const username = sessionStorage.getItem("username");
+        const role = sessionStorage.getItem("role");
+
+        if (!username || !role) {
+            alert("Session expired");
+            window.location.href = "/index";
+        }
+
+        const chatDiv = document.getElementById("chat");
+
+        async function loadMessages() {
+            try {
+                const res = await fetch("/get_messages");
+                const data = await res.json();
+
+                chatDiv.innerHTML = "";
+
+                data.messages.forEach(m => {
+                    const div = document.createElement("div");
+                    div.className = "message " + (m.sender === username ? "right" : "left");
+
+                    div.innerHTML = `
+                        <div class="sender">${m.sender.toUpperCase()} (${m.role})</div>
+                        <div>${m.text}</div>
+                        <div class="time">${new Date(m.time * 1000).toLocaleTimeString()}</div>
+                    `;
+
+                    chatDiv.appendChild(div);
+                });
+
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            } catch (err) {
+                console.error("Error loading messages:", err);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const text = input.value.trim();
+            if (!text) return;
+
+            await fetch("/send_message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sender: username, role: role, text: text })
+            });
+
+            input.value = "";
+            loadMessages();
+        }
+
+        setInterval(loadMessages, 3000);
+        loadMessages();
+    </script>
+
+</body>
+
+</html>

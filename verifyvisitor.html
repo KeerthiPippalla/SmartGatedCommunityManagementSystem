@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Visitor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            padding: 40px 30px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            text-align: center;
+            color: #FF7A2C;
+            letter-spacing: 1px;
+            font-size: 28px;
+        }
+
+        .option-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .option-buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #FF7A2C;
+            color: #fff;
+            font-size: 14px;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .option-buttons button:hover {
+            background-color: #FF944D;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid #FFD3AC;
+            font-size: 14px;
+            margin-top: 10px;
+            outline: none;
+        }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus {
+            border-color: #FF7A2C;
+            box-shadow: 0 0 5px rgba(255, 122, 44, 0.5);
+        }
+
+        #capturedPreview,
+        #video {
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 12px;
+            display: none;
+            object-fit: cover;
+        }
+
+        #captureBtn {
+            background-color: #FF7A2C;
+            color: #fff;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.3s, transform 0.2s;
+            display: none;
+        }
+
+        #captureBtn:hover {
+            background-color: #FF944D;
+            transform: translateY(-2px);
+        }
+
+        button.verify-btn {
+            background-color: #FFD3AC;
+            color: #000;
+            border: none;
+            font-weight: bold;
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button.verify-btn:hover {
+            background-color: #FFC08A;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            min-height: 70px;
+            font-size: 16px;
+        }
+
+        .allowed {
+            background-color: #e7ffe7;
+            color: #1b7d1b;
+        }
+
+        .unknown {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .success {
+            background-color: #e6f7ff;
+            color: #005b96;
+        }
+
+        .register-box {
+            background: #fefefe;
+            padding: 25px;
+            margin-top: 20px;
+            border-radius: 15px;
+            display: none;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .register-box p {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .register-box input[type="text"],
+        .register-box input[type="file"] {
+            margin-top: 10px;
+        }
+
+        .register-box button {
+            margin-top: 15px;
+            background-color: #FF7A2C;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .register-box button:hover {
+            background-color: #FF944D;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 500px) {
+            .option-buttons {
+                flex-direction: column;
+            }
+
+            button.verify-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>VERIFY VISITOR</h2>
+
+        <input type="text" id="villaId" placeholder="ENTER VILLA ID (e.g. villa1)">
+
+        <div class="option-buttons">
+            <button onclick="document.getElementById('faceImage').click()">UPLOAD PHOTO</button>
+            <button onclick="openCamera()">CAPTURE PHOTO</button>
+        </div>
+
+        <input type="file" id="faceImage" accept="image/*" style="display:none;" onchange="previewUpload(event)">
+
+        <img id="capturedPreview">
+        <video id="video" autoplay></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <button id="captureBtn" onclick="capturePhoto()">CAPTURE PHOTO</button>
+
+        <button class="verify-btn" onclick="verifyVisitor()">VERIFY VISITOR</button>
+
+        <div id="result" class="result"></div>
+
+        <div id="unknownSection" class="register-box">
+            <p> <b>UNKNOWN VISITOR</b></p>
+            <input type="text" id="visitorName" placeholder="ENTER VISITOR NAME">
+            <button onclick="postNotification()">POST NOTIFICATION TO RESIDENT</button>
+        </div>
+
+        <div id="approvalSection" class="register-box">
+            <p><b>VISITOR APPROVED BY RESIDENT</b></p>
+            <input type="file" id="multiImages" accept="image/*" multiple>
+            <button onclick="finalRegister()">COMPLETE REGISTRATION</button>
+        </div>
+    </div>
+
+    <script>
+        let lastCapturedImage = null;
+        let currentNotifId = null;
+        let pollTimer = null;
+        let cameraStream = null;
+
+        function previewUpload(event) {
+            lastCapturedImage = event.target.files[0];
+            const preview = document.getElementById("capturedPreview");
+            preview.src = URL.createObjectURL(lastCapturedImage);
+            preview.style.display = "block";
+            document.getElementById("video").style.display = "none";
+            document.getElementById("captureBtn").style.display = "none";
+        }
+
+        function openCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    cameraStream = stream;
+                    const video = document.getElementById("video");
+                    video.srcObject = stream;
+                    video.style.display = "block";
+                    document.getElementById("captureBtn").style.display = "block";
+                    document.getElementById("capturedPreview").style.display = "none";
+                })
+                .catch(() => alert("Camera access denied"));
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById("video");
+            const canvas = document.getElementById("canvas");
+            const preview = document.getElementById("capturedPreview");
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0);
+
+            canvas.toBlob(blob => {
+                lastCapturedImage = new File([blob], "captured.jpg", { type: "image/jpeg" });
+                preview.src = URL.createObjectURL(blob);
+                preview.style.display = "block";
+                video.style.display = "none";
+                document.getElementById("captureBtn").style.display = "none";
+                if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
+            }, "image/jpeg");
+        }
+
+        async function verifyVisitor() {
+            const villaId = document.getElementById("villaId").value.trim().toLowerCase();
+            if (!villaId || !lastCapturedImage) return alert("Villa ID and visitor photo required");
+
+            const result = document.getElementById("result");
+            const formData = new FormData();
+            formData.append("villa_id", villaId);
+            formData.append("image", lastCapturedImage);
+
+            const res = await fetch("/recognize_visitor", { method: "POST", body: formData });
+            const data = await res.json();
+
+            if (data.status === "allowed") {
+                result.className = "result allowed";
+                result.innerHTML = `
+                     ACCESS GRANTED<br>
+                    <b>VISITOR:</b> ${data.visitor_name}<br>
+                    <b>VILLA:</b> ${data.villa_id}<br>
+                    
+                `;
+                document.getElementById("unknownSection").style.display = "none";
+            } else if (data.status === "unknown") {
+                result.className = "result unknown";
+                result.innerHTML = ` UNKNOWN VISITOR DETECTED<br>ENTER VISITOR NAME & SEND NOTIFICATION`;
+                document.getElementById("unknownSection").style.display = "block";
+            }
+        }
+
+        async function postNotification() {
+            const villaId = document.getElementById("villaId").value.trim().toLowerCase();
+            const visitorName = document.getElementById("visitorName").value.trim();
+            if (!visitorName) return alert("Visitor name required");
+
+            const formData = new FormData();
+            formData.append("villa_id", villaId);
+            formData.append("visitor_name", visitorName);
+            formData.append("image", lastCapturedImage);
+
+            const res = await fetch("/create_notification", { method: "POST", body: formData });
+            const data = await res.json();
+
+            if (data.status === "ok") {
+                currentNotifId = data.notification_id;
+                const result = document.getElementById("result");
+                result.className = "result success";
+                result.innerHTML = `📩 Notification sent to resident. Waiting for approval...`;
+                document.getElementById("unknownSection").style.display = "none";
+                startPolling();
+            }
+        }
+
+        function startPolling() {
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(async () => {
+                const villaId = document.getElementById("villaId").value.trim().toLowerCase();
+                const res = await fetch(`/check_notification_status?villa_id=${villaId}&notif_id=${currentNotifId}`);
+                const data = await res.json();
+                if (data.status === "approved") {
+                    clearInterval(pollTimer);
+                    document.getElementById("result").className = "result allowed";
+                    document.getElementById("result").innerHTML = ` VISITOR APPROVED<br>UPLOAD MULTIPLE IMAGES TO COMPLETE REGISTRATION`;
+                    document.getElementById("approvalSection").style.display = "block";
+                }
+                if (data.status === "rejected") {
+                    clearInterval(pollTimer);
+                    document.getElementById("result").className = "result unknown";
+                    document.getElementById("result").innerHTML = ` VISITOR REJECTED BY RESIDENT`;
+                }
+            }, 3000);
+        }
+
+        async function finalRegister() {
+            const villaId = document.getElementById("villaId").value.trim().toLowerCase();
+            const images = document.getElementById("multiImages").files;
+            if (!images || images.length < 2) return alert("Please upload at least 2 images");
+
+            const formData = new FormData();
+            formData.append("villa_id", villaId);
+            formData.append("notif_id", currentNotifId);
+            for (let img of images) formData.append("images", img);
+
+            const res = await fetch("/final_register_visitor", { method: "POST", body: formData });
+            const data = await res.json();
+
+            if (data.status === "success") {
+                const result = document.getElementById("result");
+                result.className = "result allowed";
+                result.innerHTML = ` VISITOR REGISTERED SUCCESSFULLY<br>`;
+            } else alert("Registration failed: " + data.message);
+        }
+    </script>
+</body>
+
+</html>

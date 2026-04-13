@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Parking</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #FFD3AC 0%, #FFB47C 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #000;
+        }
+
+        .header {
+            background: #fff;
+            padding: 25px 40px;
+            border-radius: 25px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #FF7A2C;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+
+        .stat-card {
+            background: #fff6ee;
+            padding: 18px 22px;
+            border-radius: 16px;
+            flex: 1 1 150px;
+            border: 1px solid #FFD3AC;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-card h3 {
+            margin: 5px 0;
+            font-size: 1.3rem;
+            color: #8a4f2a;
+        }
+
+        .progress-wrap {
+            background: #fff0e3;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 16px;
+            border: 1px solid #FFD3AC;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #FFD3AC, #FF7A2C);
+            transition: width 0.6s ease;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        .slot {
+            background: #fff;
+            text-align: center;
+            padding: 18px;
+            border-radius: 16px;
+            border: 2px solid #FFD3AC;
+        }
+
+        .slot-number {
+            font-weight: bold;
+        }
+
+        .occupied {
+            background: #fff0e3;
+            border-color: #FF7A2C;
+        }
+
+        .free {
+            background: #e7ffe7;
+            border-color: #4f9c6b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">Manage Parking Slots</div>
+
+    <div class="container">
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="totalCount">10</h3>
+                <p>Total Slots</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="occCount">0</h3>
+                <p>Occupied</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="freeCount">0</h3>
+                <p>Free</p>
+            </div>
+        </div>
+
+        <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="grid" id="slotGrid"></div>
+
+    </div>
+
+    <script>
+        const slotGrid = document.getElementById("slotGrid");
+        const occCountEl = document.getElementById("occCount");
+        const freeCountEl = document.getElementById("freeCount");
+        const progressBar = document.getElementById("progressBar");
+
+        function renderSlots(slots) {
+            slotGrid.innerHTML = "";
+            let occupied = 0;
+
+            Object.keys(slots)
+                .sort((a, b) => parseInt(a.replace("SLOT_", "")) - parseInt(b.replace("SLOT_", "")))
+                .forEach(slotId => {
+                    const data = slots[slotId] || {};
+                    const isOccupied = data.occupied === true;
+                    if (isOccupied) occupied++;
+
+                    const div = document.createElement("div");
+                    div.className = "slot " + (isOccupied ? "occupied" : "free");
+
+                    div.innerHTML = `
+                <div class="slot-number">${slotId}</div>
+                <div>${isOccupied ? "Occupied" : "Free"}</div>
+                <div>
+                    ${isOccupied ? `Vehicle: ${data.vehicle_no || '-'}` : "No vehicle"}
+                </div>
+                ${isOccupied ? `<div>Villa: ${data.villa_id || '-'}</div>` : ""}
+            `;
+
+                    slotGrid.appendChild(div);
+                });
+
+            const total = Object.keys(slots).length;
+            const free = total - occupied;
+
+            occCountEl.textContent = occupied;
+            freeCountEl.textContent = free;
+            progressBar.style.width = (occupied / total) * 100 + "%";
+        }
+
+        async function loadSlots() {
+            const res = await fetch("/get_parking_slots");
+            const data = await res.json();
+            renderSlots(data);
+        }
+
+        setInterval(loadSlots, 3000);
+        loadSlots();
+    </script>
+
+</body>
+
+</html>
